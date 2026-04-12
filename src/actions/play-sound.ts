@@ -25,8 +25,7 @@ export class PlaySoundAction extends SingletonAction<PlaySoundSettings> {
             return;
         } else {
             const mode = settings.mode ?? "play_stop";
-            const sameActionKeys = Object.keys(this.playingSounds).filter((id) => id.startsWith(ev.action.manifestId));
-
+            const sameActionKeys = Object.keys(this.playingSounds).filter((id) => id.startsWith(ev.action.coordinates?.column + "-" + ev.action.coordinates?.row));
             if (mode === "play_stop" && sameActionKeys.length > 0) {
                 sameActionKeys.forEach((key) => {
                     this.playingSounds[key].stop();
@@ -43,20 +42,29 @@ export class PlaySoundAction extends SingletonAction<PlaySoundSettings> {
                 });
             }
 
-            const playerId = `${ev.action.manifestId}-${Date.now()}`;
+            if (mode === "loop_stop" && sameActionKeys.length > 0) {
+                sameActionKeys.forEach((key) => {
+                    this.playingSounds[key].stop();
+                    delete this.playingSounds[key];
+                });
+                ev.action.showOk();
+                return;
+            }
+
+            const playerId = `${ev.action.coordinates?.column + "-" + ev.action.coordinates?.row}`;
             const player = new FfplayPlayer(playerId, source, {
-                volume: settings.volume ?? 1,
+                volume: settings.volume ?? 100,
                 loop: mode === "loop_stop",
             });
 
             player.on("playerror", (id, error) => {
-                streamDeck.logger.error(`Error playing sound (${id}): ${error}`);
-                delete this.playingSounds[id];
+                streamDeck.logger.error(`Error playing sound (${playerId}): ${error}`);
+                delete this.playingSounds[playerId];
                 ev.action.showAlert();
             });
 
             player.on("end", (id) => {
-                delete this.playingSounds[id];
+                delete this.playingSounds[playerId];
             });
 
             this.playingSounds[playerId] = player;
