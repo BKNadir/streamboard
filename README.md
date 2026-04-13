@@ -8,7 +8,7 @@ Volume control (0-100%)
 
 Loop/repeat mode
 
-Specific audio device support (WIP)
+Specific audio device support
 
 Play/Stop Sound actions
 
@@ -34,4 +34,16 @@ I'll add release when I'll be satisfied with the features implemented
 # License
 MIT License - see LICENSE
 
-Plugin developed by bknadir - Software Development Student
+Plugin developed by bknadir - Developer in my free time.
+
+## Support the project
+
+If you find this project useful and would like to support its development, you can do so here:
+
+<a href="https://paypal.me/bknadir?locale.x=fr_FR&country.x=BE">
+  <img src="https://www.paypalobjects.com/paypal-ui/logos/svg/paypal-mark-color.svg" alt="Support via PayPal" width="60">
+</a>
+
+
+Support is completely optional and never required.  
+Using the project, sharing feedback, and reporting issues already helps a lot.
