@@ -1,0 +1,22 @@
+<svg width="512" height="512" xmlns="http://www.w3.org/2000/svg">
+ <g id="Layer_1">
+  <title>Layer 1</title>
+  <path transform="translate(104.00000256299973,388.0000131130219) scale(0.005) translate(-104.00000256299973,-388.0000131130219)" id="svg_6" d="m1,280.375l149,-260.75l149,260.75l-298,0z" opacity="NaN" fill="url(#svg_3)"/>
+  <path stroke-width="0" transform="rotate(90.0858, 256.139, 256.256)" id="svg_8" d="m70.13914,427.25638l186,-342.00102l186,342.00102l-372,0z" fill="url(#svg_27)"/>
+  <path id="svg_9" d="m732.32501,228.26189l0.745,-1.30375l0.745,1.30375l-1.49,0z" fill="url(#svg_7)"/>
+  <path id="svg_10" d="m373.46167,268.06188l0.745,-1.30375l0.745,1.30375l-1.49,0z" fill="url(#svg_7)"/>
+  <path id="svg_11" d="m248.09167,269.38854l0.745,-1.30375l0.745,1.30375l-1.49,0z" fill="url(#svg_7)"/>
+  <path id="svg_12" d="m169.15499,266.73522l0.745,-1.30375l0.745,1.30375l-1.49,0z" fill="url(#svg_7)"/>
+  <path id="svg_13" d="m130.68168,197.74855l0.745,-0.66667l0.745,0.66667l-1.49,0z" fill="url(#svg_7)"/>
+ </g>
+ <defs>
+  <linearGradient spreadMethod="pad" y2="0.28594" x2="0.58594" y1="0" x1="0" id="svg_7">
+   <stop offset="0.65234" stop-opacity="0.99609" stop-color="#00ff00"/>
+   <stop offset="1" stop-opacity="0.99609" stop-color="#00bf5f"/>
+  </linearGradient>
+  <linearGradient spreadMethod="pad" y2="0.40703" x2="0.65234" y1="1" x1="1" id="svg_27">
+   <stop offset="0.65234" stop-opacity="0.99609" stop-color="#00ff00"/>
+   <stop offset="1" stop-opacity="0.99609" stop-color="#00bf5f"/>
+  </linearGradient>
+ </defs>
+</svg>
