@@ -8,7 +8,7 @@ Volume control (0-100%)
 
 Loop/repeat mode
 
-Specific audio device support (WIP)
+Specific audio device support
 
 Play/Stop Sound actions
 
