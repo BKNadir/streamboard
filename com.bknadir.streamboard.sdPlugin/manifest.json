@@ -1,64 +1,64 @@
 {
     "$schema": "https://schemas.elgato.com/streamdeck/plugins/manifest.json",
-	"Name": "StreamBoard",
-	"Version": "0.1.0.0",
-	"Author": "bknadir",
-	"Actions": [
-		{
-			"Name": "Play",
-			"UUID": "com.bknadir.streamboard.play",
-			"Icon": "imgs/actions/play/icon",
-			"Tooltip": "Play sound from local file or URL",
-			"PropertyInspectorPath": "ui/play-sound.html",
-			"Controllers": [
-				"Keypad"
-			],
-			"States": [
-				{
-					"Image": "imgs/actions/play/key",
-					"TitleAlignment": "middle"
-				}
-			]
-		},
-		{
-			"Name": "Stop",
-			"UUID": "com.bknadir.streamboard.stop",
-			"Icon": "imgs/actions/stop/icon",
-			"Tooltip": "Stop any sound played from this plugin",
-			"PropertyInspectorPath": "ui/stop-sound.html",
-			"Controllers": [
-				"Keypad"
-			],
-			"States": [
-				{
-					"Image": "imgs/actions/stop/key",
-					"TitleAlignment": "middle"
-				}
-			]
-		}
-	],
-	"Category": "StreamBoard",
-	"CategoryIcon": "imgs/plugin/category-icon",
-	"CodePath": "bin/plugin.js",
-	"Description": "Use your streamdeck as soundboard with local file or from direct URL",
-	"Icon": "imgs/plugin/marketplace",
-	"SDKVersion": 3,
-	"Software": {
-		"MinimumVersion": "6.9"
-	},
-	"OS": [
-		{
-			"Platform": "mac",
-			"MinimumVersion": "12"
-		},
-		{
-			"Platform": "windows",
-			"MinimumVersion": "10"
-		}
-	],
-	"Nodejs": {
-		"Version": "20",
-		"Debug": "enabled"
-	},
-	"UUID": "com.bknadir.streamboard"
+    "Name": "StreamBoard",
+    "Version": "0.1.0.0",
+    "Author": "bknadir",
+    "Actions": [
+        {
+            "Name": "Play",
+            "UUID": "com.bknadir.streamboard.play",
+            "Icon": "imgs/actions/play/icon",
+            "Tooltip": "Play sound from local file or URL",
+            "PropertyInspectorPath": "ui/play-sound.html",
+            "Controllers": [
+                "Keypad"
+            ],
+            "States": [
+                {
+                    "Image": "imgs/actions/play/key",
+                    "TitleAlignment": "middle"
+                }
+            ]
+        },
+        {
+            "Name": "Stop",
+            "UUID": "com.bknadir.streamboard.stop",
+            "Icon": "imgs/actions/stop/icon",
+            "Tooltip": "Stop any sound played from this plugin",
+            "PropertyInspectorPath": "ui/stop-sound.html",
+            "Controllers": [
+                "Keypad"
+            ],
+            "States": [
+                {
+                    "Image": "imgs/actions/stop/key",
+                    "TitleAlignment": "middle"
+                }
+            ]
+        }
+    ],
+    "Category": "StreamBoard",
+    "CategoryIcon": "imgs/plugin/category-icon",
+    "CodePath": "bin/plugin.js",
+    "Description": "Use your streamdeck as soundboard with local file or from direct URL",
+    "Icon": "imgs/plugin/marketplace",
+    "SDKVersion": 3,
+    "Software": {
+        "MinimumVersion": "6.9"
+    },
+    "OS": [
+        {
+            "Platform": "mac",
+            "MinimumVersion": "12"
+        },
+        {
+            "Platform": "windows",
+            "MinimumVersion": "10"
+        }
+    ],
+    "Nodejs": {
+        "Version": "20",
+        "Debug": "enabled"
+    },
+    "UUID": "com.bknadir.streamboard"
 }
