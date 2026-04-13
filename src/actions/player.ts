@@ -3,32 +3,34 @@ import { fileURLToPath } from "node:url";
 import { spawn, type ChildProcess } from "node:child_process";
 import { existsSync } from "node:fs";
 
-export type Player = {
+export type MediaPlayer = {
   play: () => void;
   stop: () => void;
   on: (event: string, callback: (id: string, error?: any) => void) => void;
 };
 
-export type FfplayOptions = {
+export type PlayerOptions = {
   volume?: number;
   loop?: boolean;
+  audioDevice?: string;
 };
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const defaultFfplayPath = path.join(__dirname, "tools", "ffplay.exe");
-export class FfplayPlayer implements Player {
+const defaultPlayerPath = path.join(__dirname, "tools/player", "mpv.exe");
+
+export class Player implements MediaPlayer {
   private child: ChildProcess | null = null;
   private handlers = new Map<string, Array<(id: string, error?: any) => void>>();
 
   constructor(
     public readonly id: string,
     private readonly source: string,
-    private readonly options: FfplayOptions = {},
-    private readonly ffplayPath = process.env.FFPLAY_WINDOWS_PATH ?? defaultFfplayPath,
+    private readonly options: PlayerOptions = {},
+    private readonly playPath = process.env.PLAY_WINDOWS_PATH ?? defaultPlayerPath,
   ) {
     if (process.platform !== "win32") {
-      throw new Error("FfplayPlayer is currently only supported on Windows.");
+      throw new Error("Player is currently only supported on Windows.");
     }
   }
 
@@ -37,24 +39,38 @@ export class FfplayPlayer implements Player {
       return;
     }
 
-    if (!existsSync(this.ffplayPath)) {
-      this.emit("playerror", new Error(`ffplay not found at ${this.ffplayPath}`));
+    if (!existsSync(this.playPath)) {
+      this.emit("playerror", new Error(`Player not found at ${this.playPath}`));
       return;
     }
 
-    const volume = Math.round(this.options.volume ?? 1);
-    const args = ["-nodisp", "-autoexit", "-loglevel", "error", "-volume", `${volume}`];
+    const volume = this.normalizeVolume(this.options.volume);
+
+    const args = [
+      "--no-video",
+      "--really-quiet",
+      "--no-terminal",
+      `--volume=${volume}`,
+      "--keep-open=no",
+      "--idle=no",
+    ];
 
     if (this.options.loop) {
-      args.push("-loop", "0");
+      args.push("--loop-file=inf");
+    }
+
+    if (this.options.audioDevice) {
+      args.push(`--audio-device=${this.options.audioDevice}`);
     }
 
     args.push(this.source);
 
-    const child = spawn(this.ffplayPath, args, {
+    const child = spawn(this.playPath, args, {
       windowsHide: true,
-      stdio: ["ignore", "ignore", "ignore"],
+      stdio: "ignore",
     });
+
+    this.child = child;
 
     child.on("error", (error) => {
       this.child = null;
@@ -63,14 +79,14 @@ export class FfplayPlayer implements Player {
 
     child.on("exit", (code, signal) => {
       this.child = null;
-      if (code === 0 || signal) {
-        this.emit("end");
-      } else {
-        this.emit("playerror", new Error(`ffplay exited with code ${code}`));
-      }
-    });
 
-    this.child = child;
+      if (code === 0 || signal !== null) {
+        this.emit("end");
+        return;
+      }
+
+      this.emit("playerror", new Error(`Player exited with code ${code}`));
+    });
   }
 
   stop(): void {
@@ -79,7 +95,7 @@ export class FfplayPlayer implements Player {
     }
 
     if (!this.child.killed) {
-      this.child.kill();
+      this.child.kill("SIGTERM");
     }
 
     this.child = null;
@@ -96,6 +112,19 @@ export class FfplayPlayer implements Player {
     if (!callbacks) {
       return;
     }
+
     callbacks.forEach((callback) => callback(this.id, error));
+  }
+
+  private normalizeVolume(volume?: number): number {
+    if (volume == null || Number.isNaN(volume)) {
+      return 100;
+    }
+
+    if (volume <= 1) {
+      return Math.max(0, Math.min(100, Math.round(volume * 100)));
+    }
+
+    return Math.max(0, Math.min(100, Math.round(volume)));
   }
 }

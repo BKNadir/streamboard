@@ -1,5 +1,5 @@
 ## StreamBoard - Stream Deck Audio Plugin
-Stream Deck plugin for advanced audio playback with support for local files and URLs, volume control, and multi-output management.
+Stream Deck plugin for advanced soundbox features with support for local files and URLs, volume control, and multi-output management.
 
 # Features
 Audio playback of local MP3 files and remote URLs
@@ -20,7 +20,7 @@ Go to Store → Search "StreamBoard"
 Click Install
 
 ## Manual Installation
-bash
+
 ### Clone the repo
 git clone https://github.com/bknadir/streamboard-streamdeck.git
 cd streamboard-streamdeck

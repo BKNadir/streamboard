@@ -1,7 +1,7 @@
 import streamDeck from "@elgato/streamdeck";
 import { PlaySoundAction } from "./actions/play-sound";
 import { StopSoundAction } from "./actions/stop-sound";
-import { Player } from "./actions/ffplay-player";
+import { Player } from "./actions/player";
 
 
 streamDeck.logger.setLevel("trace");

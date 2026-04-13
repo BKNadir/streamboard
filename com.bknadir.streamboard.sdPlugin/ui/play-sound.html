@@ -1,92 +1,111 @@
 <!doctype html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<title>Play Sound</title>
-        <script src="sdpi-components.js"></script>
-	</head>
-	<body>
-		<sdpi-item label="Source Type">
-			<sdpi-radio setting="sourceType" columns="2">
-				<option value="file" selected>Local file</option>
-                <option value="url">URL</option>
-			</sdpi-radio>
-		</sdpi-item>
 
-		<sdpi-item id="fileItem" label="File">
-			<sdpi-file
-				setting="sourceFile"
-				accept="audio/*"
-				placeholder="Select an audio file">
-			</sdpi-file>
-		</sdpi-item>
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Play Sound</title>
+	<script src="sdpi-components.js"></script>
+</head>
 
-		<sdpi-item id="urlItem" label="URL">
-			<sdpi-textfield
-				setting="sourceUrl"
-				placeholder="https://example.com/audio.mp3">
-			</sdpi-textfield>
-		</sdpi-item>
+<body>
+	<sdpi-item label="Source Type">
+		<sdpi-radio setting="sourceType" columns="2" default="file">
+			<option value="file">Local file</option>
+			<option value="url">URL</option>
+		</sdpi-radio>
+	</sdpi-item>
 
-		<sdpi-item label="Action">
-			<sdpi-select setting="mode">
-				<option value="play_stop">Play/Stop</option>
-				<option value="play_overlap">Play/Overlap</option>
-				<option value="play_restart">Play/Restart</option>
-				<option value="loop_stop">Loop/Stop</option>
-			</sdpi-select>
-		</sdpi-item>
+	<sdpi-item id="fileItem" label="File">
+		<sdpi-file setting="sourceFile" accept="audio/*" placeholder="Select an audio file">
+		</sdpi-file>
+	</sdpi-item>
 
-		<sdpi-item label="Volume">
-			<sdpi-range
-				setting="volume"
-				min="0"
-				max="100"
-				step="5"
-				default="100"
-				show-labels>
-			</sdpi-range>
-		</sdpi-item>
+	<sdpi-item id="urlItem" label="URL">
+		<sdpi-textfield setting="sourceUrl" placeholder="https://example.com/audio.mp3">
+		</sdpi-textfield>
+	</sdpi-item>
 
-        <spdi-item label="player">
-        </spdi-item>
-		<script>
-            const { streamDeckClient } = SDPIComponents;
+	<sdpi-item label="Action">
+		<sdpi-select setting="mode">
+			<option value="play_stop">Play/Stop</option>
+			<option value="play_overlap">Play/Overlap</option>
+			<option value="play_restart">Play/Restart</option>
+			<option value="loop_stop">Loop/Stop</option>
+		</sdpi-select>
+	</sdpi-item>
 
-            function applySourceVisibility(sourceType) {
-                const fileItem = document.getElementById("fileItem");
-                const urlItem = document.getElementById("urlItem");
+	<sdpi-item label="Volume">
+		<sdpi-range setting="volume" min="0" max="100" step="5" default="100" show-labels>
+		</sdpi-range>
+	</sdpi-item>
 
-                if (sourceType === "file") {
-                    fileItem.style.display = "";
-                    urlItem.style.display = "none";
-                } else {
-                    fileItem.style.display = "none";
-                    urlItem.style.display = "";
-                }
-            }
+	<sdpi-item label="Output">
+		<sdpi-select
+			id="outputTarget"
+			setting="outputTarget"
+			default="default"
+			datasource="getAudioDevices">
+			<option value="default">System Default</option>
+		</sdpi-select>
+	</sdpi-item>
+	<script>
+		const { streamDeckClient } = SDPIComponents;
 
-            function getCurrentSourceType() {
-                const sourceRadio = document.querySelector('sdpi-radio');
-                return sourceRadio?.value || "file";
-            }
+		streamDeckClient.getSettings();
+		const outputSelect = document.getElementById("outputTarget");
 
-            const sourceRadio = document.querySelector('sdpi-radio');
-            if (sourceRadio) {
-                sourceRadio.addEventListener('valuechange', () => {
-                    applySourceVisibility(getCurrentSourceType());
-                });
-                sourceRadio.addEventListener('change', () => {
-                    applySourceVisibility(getCurrentSourceType());
-                });
-            }
+		function applySourceVisibility(sourceType) {
+			const fileItem = document.getElementById("fileItem");
+			const urlItem = document.getElementById("urlItem");
 
-            streamDeckClient.didReceiveSettings.subscribe((event) => {
-                const settings = event.payload?.settings || {};
-                applySourceVisibility(getCurrentSourceType() || "file");
-            });
+			if (sourceType === "file") {
+				fileItem.style.display = "";
+				urlItem.style.display = "none";
+			} else {
+				fileItem.style.display = "none";
+				urlItem.style.display = "";
+			}
+		}
 
-		</script>
-	</body>
+		function populateOutputDevices(devices) {
+			const currentValue = outputSelect.value || "default";
+
+			outputSelect.innerHTML = "";
+			outputSelect.appendChild(new Option("System Default", "default"));
+
+			for (const device of devices) {
+				outputSelect.appendChild(new Option(device.label, device.value));
+			}
+
+			const hasCurrentValue = Array.from(outputSelect.options).some(
+				(option) => option.value === currentValue
+			);
+
+			outputSelect.value = hasCurrentValue ? currentValue : "default";
+		}
+
+		outputSelect.addEventListener("change", async () => {
+			const settings = await streamDeckClient.getSettings();
+			await streamDeckClient.setSettings({
+				...settings,
+				outputTarget: outputSelect.value,
+			});
+		});
+
+		const sourceRadio = document.querySelector("sdpi-radio");
+		if (sourceRadio) {
+			sourceRadio.addEventListener("valuechange", () => {
+				applySourceVisibility(sourceRadio.value || "file");
+			});
+		}
+
+		streamDeckClient.didReceiveSettings.subscribe((event) => {
+			const settings = event.payload?.settings || {};
+			applySourceVisibility(settings.sourceType || "file");
+		});
+	
+	</script>
+</body>
+
 </html>
