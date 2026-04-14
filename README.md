@@ -34,7 +34,7 @@ I'll add release when I'll be satisfied with the features implemented
 ## Third-party dependencies
 This project includes or relies on mpv for audio playback.
 
-Project: https://github.com/mpv-player/mpv  
+Project: https://github.com/mpv-player/mpv
 License: GPLv3
 
 mpv is used as a third-party component for media playback.  
