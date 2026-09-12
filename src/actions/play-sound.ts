@@ -5,6 +5,7 @@
 	type SendToPluginEvent,
 } from "@elgato/streamdeck";
 import { execFile } from "node:child_process";
+import { Downloader } from "./downloader";
 import { Player } from "./player";
 
 streamDeck.logger.setLevel("info");
@@ -93,13 +94,14 @@ function detectWinOutput(log: typeof streamDeck.logger): Promise<AudioOutputDevi
 @action({ UUID: "com.bknadir.streamboard.play" })
 export class PlaySoundAction extends SingletonAction<Settings> {
     private readonly log = streamDeck.logger.createScope("PlaySoundAction");
+    private readonly downloader = new Downloader();
 
     constructor(private readonly playingSounds: Record<string, any>) {
         super();
         this.log.info("PlaySoundAction initialized");
     }
 
-    override onKeyDown(ev: KeyDownEvent<Settings>): void | Promise<void> {
+    override async onKeyDown(ev: KeyDownEvent<Settings>): Promise<void> {
         const settings = ev.payload.settings;
         this.log.debug(`onKeyDown settings: ${JSON.stringify(settings ?? {})}`);
 
@@ -146,8 +148,20 @@ export class PlaySoundAction extends SingletonAction<Settings> {
             return;
         }
 
+        let playableSource = source;
+        if (settings.sourceType === "url") {
+            try {
+                playableSource = await this.downloader.resolve(source);
+                this.log.info(`Using cached download ${playableSource}`);
+            } catch (error) {
+                this.log.error(`Failed to resolve/download source: ${source}`, error);
+                ev.action.showAlert();
+                return;
+            }
+        }
+
         const playerId = `${ev.action.coordinates?.column + "-" + ev.action.coordinates?.row}`;
-        const player = new Player(playerId, source, {
+        const player = new Player(playerId, playableSource, {
             volume: settings.volume ?? 100,
             loop: mode === "loop_stop",
             audioDevice: settings.outputTarget && settings.outputTarget !== "default"

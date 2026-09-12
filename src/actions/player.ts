@@ -63,6 +63,7 @@ export class Player implements MediaPlayer {
       args.push(`--audio-device=${this.options.audioDevice}`);
     }
 
+    this.addNetworkHeaders(args);
     args.push(this.source);
 
     const child = spawn(this.playPath, args, {
@@ -126,5 +127,28 @@ export class Player implements MediaPlayer {
     }
 
     return Math.max(0, Math.min(100, Math.round(volume)));
+  }
+
+  private addNetworkHeaders(args: string[]): void {
+    let sourceUrl: URL;
+
+    try {
+      sourceUrl = new URL(this.source);
+    } catch {
+      return;
+    }
+
+    if (sourceUrl.protocol !== "http:" && sourceUrl.protocol !== "https:") {
+      return;
+    }
+
+    const referer = `${sourceUrl.origin}/`;
+    args.push(
+      "--http-header-fields=" +
+        [
+          "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131 Safari/537.36",
+          `Referer: ${referer}`,
+        ].join(","),
+    );
   }
 }
