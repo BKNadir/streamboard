@@ -42,10 +42,9 @@ npx streamdeck link com.bknadir.streamboard.sdPlugin
 
 During development, `npm run watch` rebuilds and restarts the plugin on every change. `npm run typecheck` checks the TypeScript without building.
 
-## Platform notes
+## Requirements
 
-- **Windows**: mpv is bundled with the plugin, nothing else to install.
-- **macOS**: install mpv first (`brew install mpv`). The plugin looks for it in `/opt/homebrew/bin` and `/usr/local/bin`.
+Windows 10 or later. mpv is bundled with the plugin, nothing else to install.
 
 ### Advanced settings (environment variables)
 

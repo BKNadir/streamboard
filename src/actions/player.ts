@@ -21,27 +21,15 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const bundledPlayerDir = path.join(__dirname, "tools", "player");
 
 /**
- * Locates the mpv executable. An explicit path in STREAMBOARD_MPV_PATH (or the
- * legacy PLAY_WINDOWS_PATH) wins; otherwise the copy bundled with the plugin is
- * used on Windows, and the usual Homebrew locations are tried on macOS.
+ * Locates the mpv executable: an explicit path in STREAMBOARD_MPV_PATH (or the
+ * legacy PLAY_WINDOWS_PATH) wins, otherwise the copy bundled with the plugin.
  */
-export function resolveMpvPath(): string | undefined {
-  const override = process.env.STREAMBOARD_MPV_PATH ?? process.env.PLAY_WINDOWS_PATH;
-  if (override) {
-    return override;
-  }
-
-  const candidates =
-    process.platform === "win32"
-      ? [path.join(bundledPlayerDir, "mpv.exe")]
-      : [
-          path.join(bundledPlayerDir, "mpv"),
-          "/opt/homebrew/bin/mpv",
-          "/usr/local/bin/mpv",
-          "/usr/bin/mpv",
-        ];
-
-  return candidates.find((candidate) => existsSync(candidate));
+export function resolveMpvPath(): string {
+  return (
+    process.env.STREAMBOARD_MPV_PATH ??
+    process.env.PLAY_WINDOWS_PATH ??
+    path.join(bundledPlayerDir, "mpv.exe")
+  );
 }
 
 /** Clamps a 0–100 volume, defaulting to 100 when unset or invalid. */
@@ -75,14 +63,10 @@ export class Player extends EventEmitter<PlayerEvents> {
       return;
     }
 
-    if (!this.playerPath || !existsSync(this.playerPath)) {
-      const hint =
-        process.platform === "darwin"
-          ? " Install it with `brew install mpv` or set STREAMBOARD_MPV_PATH."
-          : "";
+    if (!existsSync(this.playerPath)) {
       // Emit asynchronously so callers can attach listeners after play().
       queueMicrotask(() =>
-        this.emit("playerror", this.id, new Error(`mpv not found (${this.playerPath ?? "no candidate path"}).${hint}`)),
+        this.emit("playerror", this.id, new Error(`mpv not found at ${this.playerPath}`)),
       );
       return;
     }

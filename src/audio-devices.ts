@@ -1,5 +1,4 @@
 import { execFile } from "node:child_process";
-import { resolveMpvPath } from "./actions/player";
 
 export type AudioDeviceOption = { label: string; value: string };
 
@@ -27,8 +26,7 @@ export async function listAudioOutputs(log: Logger, force = false): Promise<Audi
     return cache.items;
   }
 
-  const items =
-    process.platform === "win32" ? await listWindowsOutputs(log) : await listMpvOutputs(log);
+  const items = process.platform === "win32" ? await listWindowsOutputs(log) : [];
   cache = { at: Date.now(), items };
   return items;
 }
@@ -97,34 +95,4 @@ export function formatWindowsLabel(device: Pick<WindowsDevice, "name" | "interfa
   );
   // e.g. "Speakers (Realtek High Definition Audio)"
   return parts.length === 2 ? `${parts[0]} (${parts[1]})` : parts[0] ?? "Unknown device";
-}
-
-/** Uses `mpv --audio-device=help`, which lists exactly the ids mpv accepts. */
-function listMpvOutputs(log: Logger): Promise<AudioDeviceOption[]> {
-  const mpv = resolveMpvPath();
-  if (!mpv) {
-    return Promise.resolve([]);
-  }
-
-  return new Promise((resolve) => {
-    execFile(mpv, ["--audio-device=help"], { encoding: "utf8", timeout: 10_000 }, (error, stdout) => {
-      if (error && !stdout) {
-        log.warn("mpv device discovery failed", error);
-        resolve([]);
-        return;
-      }
-      resolve(parseMpvDeviceList(stdout));
-    });
-  });
-}
-
-export function parseMpvDeviceList(output: string): AudioDeviceOption[] {
-  const items: AudioDeviceOption[] = [];
-  for (const line of output.split(/\r?\n/)) {
-    const match = /^\s*'([^']+)'\s+\((.*)\)\s*$/.exec(line);
-    if (match && match[1] !== "auto") {
-      items.push({ value: match[1], label: match[2] || match[1] });
-    }
-  }
-  return items;
 }
