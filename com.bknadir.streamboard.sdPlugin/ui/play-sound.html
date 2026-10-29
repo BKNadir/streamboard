@@ -21,90 +21,76 @@
 		</sdpi-file>
 	</sdpi-item>
 
-	<sdpi-item id="urlItem" label="URL">
+	<sdpi-item id="urlItem" label="URL" style="display: none">
 		<sdpi-textfield setting="sourceUrl" placeholder="https://example.com/audio.mp3">
 		</sdpi-textfield>
 	</sdpi-item>
 
 	<sdpi-item label="Action">
-		<sdpi-select setting="mode">
-			<option value="play_stop">Play/Stop</option>
-			<option value="play_overlap">Play/Overlap</option>
-			<option value="play_restart">Play/Restart</option>
-			<option value="loop_stop">Loop/Stop</option>
+		<sdpi-select setting="mode" default="play_stop">
+			<option value="play_stop">Play / Stop</option>
+			<option value="play_overlap">Play / Overlap</option>
+			<option value="play_restart">Play / Restart</option>
+			<option value="loop_stop">Loop / Stop</option>
 		</sdpi-select>
 	</sdpi-item>
 
+	<sdpi-item label="">
+		<small id="modeHint"></small>
+	</sdpi-item>
+
 	<sdpi-item label="Volume">
-		<sdpi-range setting="volume" min="0" max="100" step="5" default="100" show-labels>
+		<sdpi-range setting="volume" min="0" max="100" step="5" default="100" showlabels>
+			<span slot="min">0</span>
+			<span slot="max">100</span>
 		</sdpi-range>
 	</sdpi-item>
 
 	<sdpi-item label="Output">
-		<sdpi-select
-			id="outputTarget"
-			setting="outputTarget"
-			default="default"
-			datasource="getAudioDevices">
+		<sdpi-select setting="outputTarget" default="default" datasource="getAudioDevices" show-refresh>
 			<option value="default">System Default</option>
 		</sdpi-select>
 	</sdpi-item>
+
 	<script>
 		const { streamDeckClient } = SDPIComponents;
 
-		streamDeckClient.getSettings();
-		const outputSelect = document.getElementById("outputTarget");
+		const MODE_HINTS = {
+			play_stop: "Press to play, press again to stop.",
+			play_overlap: "Each press starts a new copy of the sound on top of the others.",
+			play_restart: "Each press restarts the sound from the beginning.",
+			loop_stop: "Press to loop the sound, press again to stop.",
+		};
 
 		function applySourceVisibility(sourceType) {
-			const fileItem = document.getElementById("fileItem");
-			const urlItem = document.getElementById("urlItem");
-
-			if (sourceType === "file") {
-				fileItem.style.display = "";
-				urlItem.style.display = "none";
-			} else {
-				fileItem.style.display = "none";
-				urlItem.style.display = "";
-			}
+			const isUrl = sourceType === "url";
+			document.getElementById("fileItem").style.display = isUrl ? "none" : "";
+			document.getElementById("urlItem").style.display = isUrl ? "" : "none";
 		}
 
-		function populateOutputDevices(devices) {
-			const currentValue = outputSelect.value || "default";
-
-			outputSelect.innerHTML = "";
-			outputSelect.appendChild(new Option("System Default", "default"));
-
-			for (const device of devices) {
-				outputSelect.appendChild(new Option(device.label, device.value));
-			}
-
-			const hasCurrentValue = Array.from(outputSelect.options).some(
-				(option) => option.value === currentValue
-			);
-
-			outputSelect.value = hasCurrentValue ? currentValue : "default";
+		function applyModeHint(mode) {
+			document.getElementById("modeHint").textContent = MODE_HINTS[mode] || MODE_HINTS.play_stop;
 		}
 
-		outputSelect.addEventListener("change", async () => {
-			const settings = await streamDeckClient.getSettings();
-			await streamDeckClient.setSettings({
-				...settings,
-				outputTarget: outputSelect.value,
-			});
+		document.querySelector("sdpi-radio[setting='sourceType']")?.addEventListener("valuechange", (event) => {
+			applySourceVisibility(event.target.value || "file");
 		});
 
-		const sourceRadio = document.querySelector("sdpi-radio");
-		if (sourceRadio) {
-			sourceRadio.addEventListener("valuechange", () => {
-				applySourceVisibility(sourceRadio.value || "file");
-			});
-		}
+		document.querySelector("sdpi-select[setting='mode']")?.addEventListener("valuechange", (event) => {
+			applyModeHint(event.target.value);
+		});
 
 		streamDeckClient.didReceiveSettings.subscribe((event) => {
 			const settings = event.payload?.settings || {};
 			applySourceVisibility(settings.sourceType || "file");
+			applyModeHint(settings.mode || "play_stop");
 		});
-	
+
+		streamDeckClient.getSettings().then((response) => {
+			const settings = response?.settings || {};
+			applySourceVisibility(settings.sourceType || "file");
+			applyModeHint(settings.mode || "play_stop");
+		});
 	</script>
 </body>
 

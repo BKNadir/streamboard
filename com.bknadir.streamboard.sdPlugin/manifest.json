@@ -8,7 +8,7 @@
             "Name": "Play",
             "UUID": "com.bknadir.streamboard.play",
             "Icon": "imgs/actions/play/icon",
-            "Tooltip": "Play sound from local file or URL",
+            "Tooltip": "Play a sound from a local file or URL (press again to stop, depending on the mode)",
             "PropertyInspectorPath": "ui/play-sound.html",
             "Controllers": [
                 "Keypad"
@@ -17,14 +17,19 @@
                 {
                     "Image": "imgs/actions/play/key",
                     "TitleAlignment": "middle"
+                },
+                {
+                    "Image": "imgs/actions/play/playing",
+                    "TitleAlignment": "middle"
                 }
-            ]
+            ],
+            "DisableAutomaticStates": true
         },
         {
             "Name": "Stop",
             "UUID": "com.bknadir.streamboard.stop",
             "Icon": "imgs/actions/stop/icon",
-            "Tooltip": "Stop any sound played from this plugin",
+            "Tooltip": "Stop every sound played by StreamBoard",
             "PropertyInspectorPath": "ui/stop-sound.html",
             "Controllers": [
                 "Keypad"

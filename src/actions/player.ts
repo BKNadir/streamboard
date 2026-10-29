@@ -1,13 +1,8 @@
+import { spawn, type ChildProcess } from "node:child_process";
+import { EventEmitter } from "node:events";
+import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { spawn, type ChildProcess } from "node:child_process";
-import { existsSync } from "node:fs";
-
-export type MediaPlayer = {
-  play: () => void;
-  stop: () => void;
-  on: (event: string, callback: (id: string, error?: any) => void) => void;
-};
 
 export type PlayerOptions = {
   volume?: number;
@@ -15,23 +10,64 @@ export type PlayerOptions = {
   audioDevice?: string;
 };
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const defaultPlayerPath = path.join(__dirname, "tools/player", "mpv.exe");
+type PlayerEvents = {
+  /** Playback finished, either naturally or because stop() was called. */
+  end: [id: string];
+  /** mpv could not be started or exited with an error. */
+  playerror: [id: string, error: Error];
+};
 
-export class Player implements MediaPlayer {
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const bundledPlayerDir = path.join(__dirname, "tools", "player");
+
+/**
+ * Locates the mpv executable. An explicit path in STREAMBOARD_MPV_PATH (or the
+ * legacy PLAY_WINDOWS_PATH) wins; otherwise the copy bundled with the plugin is
+ * used on Windows, and the usual Homebrew locations are tried on macOS.
+ */
+export function resolveMpvPath(): string | undefined {
+  const override = process.env.STREAMBOARD_MPV_PATH ?? process.env.PLAY_WINDOWS_PATH;
+  if (override) {
+    return override;
+  }
+
+  const candidates =
+    process.platform === "win32"
+      ? [path.join(bundledPlayerDir, "mpv.exe")]
+      : [
+          path.join(bundledPlayerDir, "mpv"),
+          "/opt/homebrew/bin/mpv",
+          "/usr/local/bin/mpv",
+          "/usr/bin/mpv",
+        ];
+
+  return candidates.find((candidate) => existsSync(candidate));
+}
+
+/** Clamps a 0–100 volume, defaulting to 100 when unset or invalid. */
+export function normalizeVolume(volume?: number): number {
+  const value = Number(volume);
+  if (volume == null || !Number.isFinite(value)) {
+    return 100;
+  }
+  return Math.max(0, Math.min(100, Math.round(value)));
+}
+
+export class Player extends EventEmitter<PlayerEvents> {
   private child: ChildProcess | null = null;
-  private handlers = new Map<string, Array<(id: string, error?: any) => void>>();
+  private stopping = false;
 
   constructor(
     public readonly id: string,
     private readonly source: string,
     private readonly options: PlayerOptions = {},
-    private readonly playPath = process.env.PLAY_WINDOWS_PATH ?? defaultPlayerPath,
+    private readonly playerPath = resolveMpvPath(),
   ) {
-    if (process.platform !== "win32") {
-      throw new Error("Player is currently only supported on Windows.");
-    }
+    super();
+  }
+
+  get isRunning(): boolean {
+    return this.child !== null;
   }
 
   play(): void {
@@ -39,18 +75,24 @@ export class Player implements MediaPlayer {
       return;
     }
 
-    if (!existsSync(this.playPath)) {
-      this.emit("playerror", new Error(`Player not found at ${this.playPath}`));
+    if (!this.playerPath || !existsSync(this.playerPath)) {
+      const hint =
+        process.platform === "darwin"
+          ? " Install it with `brew install mpv` or set STREAMBOARD_MPV_PATH."
+          : "";
+      // Emit asynchronously so callers can attach listeners after play().
+      queueMicrotask(() =>
+        this.emit("playerror", this.id, new Error(`mpv not found (${this.playerPath ?? "no candidate path"}).${hint}`)),
+      );
       return;
     }
-
-    const volume = this.normalizeVolume(this.options.volume);
 
     const args = [
       "--no-video",
       "--really-quiet",
       "--no-terminal",
-      `--volume=${volume}`,
+      "--force-window=no",
+      `--volume=${normalizeVolume(this.options.volume)}`,
       "--keep-open=no",
       "--idle=no",
     ];
@@ -63,92 +105,47 @@ export class Player implements MediaPlayer {
       args.push(`--audio-device=${this.options.audioDevice}`);
     }
 
-    this.addNetworkHeaders(args);
-    args.push(this.source);
+    // "--" stops mpv from interpreting a file name starting with "-" as an option.
+    args.push("--", this.source);
 
-    const child = spawn(this.playPath, args, {
+    const child = spawn(this.playerPath, args, {
       windowsHide: true,
       stdio: "ignore",
     });
-
     this.child = child;
 
-    child.on("error", (error) => {
+    child.once("error", (error) => {
+      if (this.child !== child) {
+        return;
+      }
       this.child = null;
-      this.emit("playerror", error);
+      this.emit("playerror", this.id, error);
     });
 
-    child.on("exit", (code, signal) => {
+    child.once("exit", (code, signal) => {
+      if (this.child !== child) {
+        return;
+      }
       this.child = null;
 
-      if (code === 0 || signal !== null) {
-        this.emit("end");
+      // A process we killed ourselves can report a non-zero code on Windows:
+      // that is a normal stop, not an error.
+      if (this.stopping || code === 0 || signal !== null) {
+        this.emit("end", this.id);
         return;
       }
 
-      this.emit("playerror", new Error(`Player exited with code ${code}`));
+      this.emit("playerror", this.id, new Error(`mpv exited with code ${code}`));
     });
   }
 
   stop(): void {
-    if (!this.child) {
+    if (!this.child || this.stopping) {
       return;
     }
-
+    this.stopping = true;
     if (!this.child.killed) {
-      this.child.kill("SIGTERM");
+      this.child.kill();
     }
-
-    this.child = null;
-  }
-
-  on(event: string, callback: (id: string, error?: any) => void): void {
-    const callbacks = this.handlers.get(event) ?? [];
-    callbacks.push(callback);
-    this.handlers.set(event, callbacks);
-  }
-
-  private emit(event: string, error?: any): void {
-    const callbacks = this.handlers.get(event);
-    if (!callbacks) {
-      return;
-    }
-
-    callbacks.forEach((callback) => callback(this.id, error));
-  }
-
-  private normalizeVolume(volume?: number): number {
-    if (volume == null || Number.isNaN(volume)) {
-      return 100;
-    }
-
-    if (volume <= 1) {
-      return Math.max(0, Math.min(100, Math.round(volume * 100)));
-    }
-
-    return Math.max(0, Math.min(100, Math.round(volume)));
-  }
-
-  private addNetworkHeaders(args: string[]): void {
-    let sourceUrl: URL;
-
-    try {
-      sourceUrl = new URL(this.source);
-    } catch {
-      return;
-    }
-
-    if (sourceUrl.protocol !== "http:" && sourceUrl.protocol !== "https:") {
-      return;
-    }
-
-    const referer = `${sourceUrl.origin}/`;
-    args.push(
-      "--http-header-fields=" +
-        [
-          "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131 Safari/537.36",
-          `Referer: ${referer}`,
-        ].join(","),
-    );
   }
 }
