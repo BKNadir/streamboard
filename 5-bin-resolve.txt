@@ -1,0 +1,5 @@
+platform darwin arm64 node v24.21.0
+outputs: [{"deviceId":"1159716159646635957","label":"Apple Virtual Sound Device","groupId":"","kind":"audiooutput"},{"deviceId":"14057626332165357205","label":"Null Audio Device","groupId":"","kind":"audiooutput"}]
+offline context sampleRate 44100
+BIN RESOLVE OK
+exit=0

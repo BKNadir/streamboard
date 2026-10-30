@@ -1,0 +1,20 @@
+┌─────────────┬─────────────────────────────────────────────────────────────────────────────┐
+│ (index)     │ Values                                                                      │
+├─────────────┼─────────────────────────────────────────────────────────────────────────────┤
+│ sample.mp3  │ 'ok 3.22s 2ch'                                                              │
+│ sample.wav  │ 'ok 3.22s 2ch'                                                              │
+│ sample.flac │ 'ok 3.22s 2ch'                                                              │
+│ sample.ogg  │ 'ok 3.22s 2ch'                                                              │
+│ sample.aiff │ 'ok 3.22s 2ch'                                                              │
+│ sample.webm │ "FAIL Failed to execute 'decodeAudioData': unsupported audio codec: 0x1001" │
+└─────────────┴─────────────────────────────────────────────────────────────────────────────┘
+outputs: [
+  { id: '1159716159646635957', label: 'Apple Virtual Sound Device' },
+  { id: '14057626332165357205', label: 'Null Audio Device' }
+]
+Output "wasapi/{does-not-exist}" unavailable, using the default output Error: Invalid sinkId: "wasapi/{does-not-exist}"
+    at AudioEngine.getSink (/Users/runner/work/streamboard/streamboard/src/audio/engine.ts:162:19)
+    at async AudioEngine.play (/Users/runner/work/streamboard/streamboard/src/audio/engine.ts:74:18)
+ENGINE E2E OK
+ENGINE TEST DONE
+exit=0
