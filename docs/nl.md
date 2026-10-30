@@ -37,8 +37,6 @@ Ondersteunde formaten: **MP3, WAV, FLAC, OGG en AIFF**.
 | **Play / Restart** | Stopt het geluid als het speelt en start het opnieuw vanaf het begin. |
 | **Loop / Stop** | Speelt het geluid in een lus. Opnieuw drukken stopt het. |
 
-Zolang het geluid van een toets speelt, **licht de toets op** (gekleurde achtergrond met een equalizer). Als het geluid afgelopen is, ziet de toets er weer normaal uit.
-
 ## Volume
 
 Elke toets heeft een eigen volume, van 0 tot 100 %. Het komt bovenop het systeemvolume.

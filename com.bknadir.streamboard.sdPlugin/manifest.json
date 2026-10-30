@@ -16,14 +16,9 @@
             "States": [
                 {
                     "Image": "imgs/actions/play/key",
-                    "TitleAlignment": "bottom"
-                },
-                {
-                    "Image": "imgs/actions/play/playing",
-                    "TitleAlignment": "bottom"
+                    "TitleAlignment": "middle"
                 }
-            ],
-            "DisableAutomaticStates": true
+            ]
         },
         {
             "Name": "Stop",
@@ -37,7 +32,7 @@
             "States": [
                 {
                     "Image": "imgs/actions/stop/key",
-                    "TitleAlignment": "bottom"
+                    "TitleAlignment": "middle"
                 }
             ]
         }

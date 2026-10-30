@@ -37,8 +37,6 @@ Formatos compatibles: **MP3, WAV, FLAC, OGG y AIFF**.
 | **Play / Restart** | Detiene el sonido si está sonando y lo vuelve a iniciar desde el principio. |
 | **Loop / Stop** | Reproduce el sonido en bucle. Si vuelves a pulsar, se detiene. |
 
-Mientras suena el sonido de una tecla, la tecla **se ilumina** (fondo de color con un ecualizador). Vuelve a la normalidad cuando el sonido termina.
-
 ## Volumen
 
 Cada tecla tiene su propio volumen, de 0 a 100 %. Se aplica además del volumen del sistema.

@@ -37,8 +37,6 @@ Formats pris en charge : **MP3, WAV, FLAC, OGG et AIFF**.
 | **Play / Restart** | Arrête le son s'il est en cours et le relance depuis le début. |
 | **Loop / Stop** | Joue le son en boucle. Un nouvel appui l'arrête. |
 
-Tant que le son d'une touche est en cours de lecture, la touche **s'allume** (fond coloré avec un égaliseur). Elle redevient normale à la fin du son.
-
 ## Volume
 
 Chaque touche a son propre volume, de 0 à 100 %. Il s'applique en plus du volume de votre système.
