@@ -1,0 +1,81 @@
+name: nwa-smoke
+
+on:
+  push:
+    branches: ["ci/nwa-smoke"]
+
+permissions:
+  contents: write
+
+jobs:
+  lockfile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm install --no-audit --no-fund
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lockfile
+          path: package-lock.json
+      - name: Publish lockfile to a branch
+        run: |
+          mkdir /tmp/out && cp package-lock.json /tmp/out/
+          cd /tmp/out && git init -q && git checkout -q -b ci/logs-lockfile
+          git -c user.name=ci -c user.email=ci@example.com commit -qam x 2>/dev/null || (git add -A && git -c user.name=ci -c user.email=ci@example.com commit -qm lockfile)
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" ci/logs-lockfile
+
+  smoke:
+    needs: lockfile
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, macos-15-intel]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/download-artifact@v4
+        with:
+          name: lockfile
+      - name: Smoke
+        run: |
+          set +e
+          mkdir -p logs
+          run() { local name=$1; shift; echo "=== $name" ; "$@" > logs/$name.txt 2>&1; local ec=$?; echo "exit=$ec" >> logs/$name.txt; echo "$name exit=$ec" >> logs/summary.txt; return $ec; }
+          echo "${{ matrix.os }} $(uname -m) node $(node -v)" > logs/summary.txt
+          run 1-npm-ci npm ci --no-audit --no-fund || exit 0
+          run 2-typecheck npm run typecheck
+          run 3-build npm run build || exit 0
+          run 4-bundle bash -c 'ls com.bknadir.streamboard.sdPlugin/bin/node_modules com.bknadir.streamboard.sdPlugin/bin/node_modules/node-web-audio-api/*.node; du -sh com.bknadir.streamboard.sdPlugin/bin/node_modules'
+          cp .smoke/bin-resolve.mjs com.bknadir.streamboard.sdPlugin/bin/
+          run 5-bin-resolve bash -c 'cd com.bknadir.streamboard.sdPlugin/bin && node bin-resolve.mjs'
+          rm com.bknadir.streamboard.sdPlugin/bin/bin-resolve.mjs
+          run 6-plugin-import bash -c 'cd com.bknadir.streamboard.sdPlugin && (node -e "import(\"./bin/plugin.js\").then(()=>console.log(\"imported\")).catch(e=>{console.error(e);process.exit(1)})" & P=$!; sleep 8; kill $P 2>/dev/null; wait $P)'
+          mkdir -p samples
+          for f in sample.mp3 sample.wav sample.flac sample.ogg sample.aiff sample.webm; do
+            curl -sSfL -o samples/$f https://raw.githubusercontent.com/ircam-ismm/node-web-audio-api/main/examples/samples/$f
+          done
+          run 7-engine-test npx --yes tsx@4 .smoke/engine-test.mts samples
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            run 8-validate npx streamdeck validate ./com.bknadir.streamboard.sdPlugin --no-update-check
+            mkdir -p dist
+            run 9-pack npx streamdeck pack ./com.bknadir.streamboard.sdPlugin --output ./dist --force --no-update-check
+            ls -la dist >> logs/9-pack.txt
+            cp com.bknadir.streamboard.sdPlugin/bin/plugin.js logs/plugin.js
+          fi
+          exit 0
+      - name: Publish logs to a branch
+        if: always()
+        run: |
+          B=ci/logs-${{ matrix.os }}
+          cp -r logs /tmp/out && cd /tmp/out && git init -q && git checkout -q -b $B && git add -A
+          git -c user.name=ci -c user.email=ci@example.com commit -qm logs
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" $B

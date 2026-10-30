@@ -7,6 +7,7 @@
   type WillAppearEvent,
 } from "@elgato/streamdeck";
 import { listAudioOutputs } from "../audio-devices";
+import type { AudioEngine } from "../audio/engine";
 import type { SoundRegistry } from "../sound-registry";
 import { Downloader } from "./downloader";
 import { Player } from "./player";
@@ -33,6 +34,7 @@ export class PlaySoundAction extends SingletonAction<Settings> {
   constructor(
     private readonly sounds: SoundRegistry,
     private readonly downloader: Downloader,
+    private readonly engine: AudioEngine,
   ) {
     super();
 
@@ -97,7 +99,7 @@ export class PlaySoundAction extends SingletonAction<Settings> {
       volume: settings.volume ?? 100,
       loop: mode === "loop_stop",
       audioDevice: outputTarget,
-    });
+    }, this.engine);
 
     player.once("end", () => {
       this.sounds.remove(actionId, player);
@@ -122,7 +124,7 @@ export class PlaySoundAction extends SingletonAction<Settings> {
       return;
     }
 
-    const devices = await listAudioOutputs(this.log, payload.isRefresh === true);
+    const devices = await listAudioOutputs(this.engine, this.log, payload.isRefresh === true);
     await streamDeck.ui.sendToPropertyInspector({
       event: "getAudioDevices",
       items: [{ label: "System Default", value: "default" }, ...devices],

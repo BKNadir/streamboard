@@ -2,6 +2,7 @@ import streamDeck from "@elgato/streamdeck";
 import { Downloader } from "./actions/downloader";
 import { PlaySoundAction } from "./actions/play-sound";
 import { StopSoundAction } from "./actions/stop-sound";
+import { AudioEngine } from "./audio/engine";
 import { SoundRegistry } from "./sound-registry";
 
 // "debug" or "trace" are useful while developing; "info" keeps the log readable.
@@ -9,19 +10,24 @@ streamDeck.logger.setLevel(process.env.STREAMBOARD_LOG_LEVEL === "debug" ? "debu
 
 const sounds = new SoundRegistry();
 const downloader = new Downloader();
+const engine = new AudioEngine(streamDeck.logger.createScope("AudioEngine"));
 
-streamDeck.actions.registerAction(new PlaySoundAction(sounds, downloader));
+streamDeck.actions.registerAction(new PlaySoundAction(sounds, downloader, engine));
 streamDeck.actions.registerAction(new StopSoundAction(sounds));
 
-// Make sure no mpv process keeps playing after the plugin is stopped or reloaded.
-const shutdown = () => {
+// Release the audio devices cleanly when the plugin is stopped or reloaded.
+let shuttingDown = false;
+const shutdown = async () => {
+  if (shuttingDown) {
+    return;
+  }
+  shuttingDown = true;
   sounds.stopAll();
+  await engine.closeAll();
 };
-process.once("exit", shutdown);
 for (const signal of ["SIGINT", "SIGTERM"] as const) {
   process.once(signal, () => {
-    shutdown();
-    process.exit(0);
+    shutdown().finally(() => process.exit(0));
   });
 }
 

@@ -1,36 +1,19 @@
-import { spawn, type ChildProcess } from "node:child_process";
 import { EventEmitter } from "node:events";
-import { existsSync } from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { DEFAULT_SINK, type AudioEngine, type PlaybackHandle } from "../audio/engine";
 
 export type PlayerOptions = {
   volume?: number;
   loop?: boolean;
+  /** Output device id; undefined or "default" plays on the system default output. */
   audioDevice?: string;
 };
 
 type PlayerEvents = {
   /** Playback finished, either naturally or because stop() was called. */
   end: [id: string];
-  /** mpv could not be started or exited with an error. */
+  /** The file could not be decoded or the output could not be opened. */
   playerror: [id: string, error: Error];
 };
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const bundledPlayerDir = path.join(__dirname, "tools", "player");
-
-/**
- * Locates the mpv executable: an explicit path in STREAMBOARD_MPV_PATH (or the
- * legacy PLAY_WINDOWS_PATH) wins, otherwise the copy bundled with the plugin.
- */
-export function resolveMpvPath(): string {
-  return (
-    process.env.STREAMBOARD_MPV_PATH ??
-    process.env.PLAY_WINDOWS_PATH ??
-    path.join(bundledPlayerDir, "mpv.exe")
-  );
-}
 
 /** Clamps a 0–100 volume, defaulting to 100 when unset or invalid. */
 export function normalizeVolume(volume?: number): number {
@@ -41,95 +24,76 @@ export function normalizeVolume(volume?: number): number {
   return Math.max(0, Math.min(100, Math.round(value)));
 }
 
+/** One sound being played by one key. */
 export class Player extends EventEmitter<PlayerEvents> {
-  private child: ChildProcess | null = null;
-  private stopping = false;
+  private handle: PlaybackHandle | null = null;
+  private started = false;
+  private running = false;
+  private stopRequested = false;
 
   constructor(
     public readonly id: string,
     private readonly source: string,
-    private readonly options: PlayerOptions = {},
-    private readonly playerPath = resolveMpvPath(),
+    private readonly options: PlayerOptions,
+    private readonly engine: AudioEngine,
   ) {
     super();
   }
 
   get isRunning(): boolean {
-    return this.child !== null;
+    return this.running;
   }
 
   play(): void {
-    if (this.child) {
+    if (this.started) {
       return;
     }
+    this.started = true;
+    this.running = true;
 
-    if (!existsSync(this.playerPath)) {
-      // Emit asynchronously so callers can attach listeners after play().
-      queueMicrotask(() =>
-        this.emit("playerror", this.id, new Error(`mpv not found at ${this.playerPath}`)),
-      );
-      return;
-    }
-
-    const args = [
-      "--no-video",
-      "--really-quiet",
-      "--no-terminal",
-      "--force-window=no",
-      `--volume=${normalizeVolume(this.options.volume)}`,
-      "--keep-open=no",
-      "--idle=no",
-    ];
-
-    if (this.options.loop) {
-      args.push("--loop-file=inf");
-    }
-
-    if (this.options.audioDevice) {
-      args.push(`--audio-device=${this.options.audioDevice}`);
-    }
-
-    // "--" stops mpv from interpreting a file name starting with "-" as an option.
-    args.push("--", this.source);
-
-    const child = spawn(this.playerPath, args, {
-      windowsHide: true,
-      stdio: "ignore",
-    });
-    this.child = child;
-
-    child.once("error", (error) => {
-      if (this.child !== child) {
-        return;
-      }
-      this.child = null;
-      this.emit("playerror", this.id, error);
-    });
-
-    child.once("exit", (code, signal) => {
-      if (this.child !== child) {
-        return;
-      }
-      this.child = null;
-
-      // A process we killed ourselves can report a non-zero code on Windows:
-      // that is a normal stop, not an error.
-      if (this.stopping || code === 0 || signal !== null) {
-        this.emit("end", this.id);
-        return;
-      }
-
-      this.emit("playerror", this.id, new Error(`mpv exited with code ${code}`));
-    });
+    this.engine
+      .play(
+        this.source,
+        {
+          volume: normalizeVolume(this.options.volume),
+          loop: !!this.options.loop,
+          sinkId: this.options.audioDevice || DEFAULT_SINK,
+        },
+        () => this.finish(),
+      )
+      .then((handle) => {
+        this.handle = handle;
+        // stop() may have been called while the file was still decoding.
+        if (this.stopRequested) {
+          handle.stop();
+        }
+      })
+      .catch((error: unknown) => {
+        if (!this.running) {
+          return;
+        }
+        this.running = false;
+        if (this.stopRequested) {
+          this.emit("end", this.id);
+          return;
+        }
+        this.emit("playerror", this.id, error instanceof Error ? error : new Error(String(error)));
+      });
   }
 
   stop(): void {
-    if (!this.child || this.stopping) {
+    if (!this.running || this.stopRequested) {
       return;
     }
-    this.stopping = true;
-    if (!this.child.killed) {
-      this.child.kill();
+    this.stopRequested = true;
+    this.handle?.stop();
+  }
+
+  private finish(): void {
+    if (!this.running) {
+      return;
     }
+    this.running = false;
+    this.emit("end", this.id);
   }
 }
