@@ -1,0 +1,17 @@
+com.bknadir.streamboard.sdPlugin/bin/node_modules/node-web-audio-api/node-web-audio-api.darwin-arm64.node
+com.bknadir.streamboard.sdPlugin/bin/node_modules/node-web-audio-api/node-web-audio-api.darwin-x64.node
+com.bknadir.streamboard.sdPlugin/bin/node_modules/node-web-audio-api/node-web-audio-api.win32-arm64-msvc.node
+com.bknadir.streamboard.sdPlugin/bin/node_modules/node-web-audio-api/node-web-audio-api.win32-x64-msvc.node
+
+com.bknadir.streamboard.sdPlugin/bin/node_modules:
+caller
+data-uri-to-buffer
+fetch-blob
+formdata-polyfill
+node-domexception
+node-fetch
+node-web-audio-api
+web-streams-polyfill
+webidl-conversions
+33M	com.bknadir.streamboard.sdPlugin/bin/node_modules
+exit=0

@@ -1,0 +1,10 @@
+windows-latest x86_64 node v24.22.1
+1-npm-ci exit=0
+2-typecheck exit=0
+3-build exit=0
+4-bundle exit=0
+5-bin-resolve exit=0
+6-plugin-import exit=0
+7-engine-test exit=0
+8-validate exit=0
+9-pack exit=0

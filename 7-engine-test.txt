@@ -1,0 +1,13 @@
+┌─────────────┬─────────────────────────────────────────────────────────────────────────────┐
+│ (index)     │ Values                                                                      │
+├─────────────┼─────────────────────────────────────────────────────────────────────────────┤
+│ sample.mp3  │ 'ok 3.22s 2ch'                                                              │
+│ sample.wav  │ 'ok 3.22s 2ch'                                                              │
+│ sample.flac │ 'ok 3.22s 2ch'                                                              │
+│ sample.ogg  │ 'ok 3.22s 2ch'                                                              │
+│ sample.aiff │ 'ok 3.22s 2ch'                                                              │
+│ sample.webm │ "FAIL Failed to execute 'decodeAudioData': unsupported audio codec: 0x1001" │
+└─────────────┴─────────────────────────────────────────────────────────────────────────────┘
+No audio output on this runner: cpal backend error during default_output_device: DeviceUnavailable: No output device available
+ENGINE TEST DONE
+exit=0

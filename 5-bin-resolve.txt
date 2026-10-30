@@ -1,0 +1,5 @@
+platform win32 x64 node v24.22.1
+outputs: []
+offline context sampleRate 44100
+BIN RESOLVE OK
+exit=0
