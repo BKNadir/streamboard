@@ -1,0 +1,24 @@
+name: build-pluginjs
+on:
+  push:
+    branches: ["ci/build-pluginjs"]
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm ci --no-audit --no-fund
+      - run: npm run typecheck
+      - run: npm run build
+      - run: npx streamdeck validate ./com.bknadir.streamboard.sdPlugin --no-update-check
+      - name: Publish plugin.js
+        run: |
+          mkdir /tmp/out && cp com.bknadir.streamboard.sdPlugin/bin/plugin.js /tmp/out/
+          cd /tmp/out && git init -q && git checkout -q -b ci/logs-build && git add -A
+          git -c user.name=ci -c user.email=ci@example.com commit -qm build
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" ci/logs-build

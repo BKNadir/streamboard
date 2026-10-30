@@ -8,6 +8,7 @@
 } from "@elgato/streamdeck";
 import { listAudioOutputs } from "../audio-devices";
 import type { AudioEngine } from "../audio/engine";
+import { getGlobalSettings } from "../global-settings";
 import type { SoundRegistry } from "../sound-registry";
 import { Downloader } from "./downloader";
 import { Player } from "./player";
@@ -20,7 +21,6 @@ type Settings = {
   sourceFile?: string;
   sourceUrl?: string;
   mode?: PlayMode;
-  outputTarget?: string;
 };
 
 /** Key states declared in manifest.json. */
@@ -92,8 +92,9 @@ export class PlaySoundAction extends SingletonAction<Settings> {
       }
     }
 
-    const outputTarget =
-      settings.outputTarget && settings.outputTarget !== "default" ? settings.outputTarget : undefined;
+    // The output device is shared by every key (global settings).
+    const { outputTarget: sharedOutput } = getGlobalSettings();
+    const outputTarget = sharedOutput && sharedOutput !== "default" ? sharedOutput : undefined;
 
     const player = new Player(actionId, playable, {
       volume: settings.volume ?? 100,

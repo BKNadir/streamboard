@@ -47,9 +47,13 @@
 	</sdpi-item>
 
 	<sdpi-item label="Output">
-		<sdpi-select setting="outputTarget" default="default" datasource="getAudioDevices" show-refresh>
+		<sdpi-select setting="outputTarget" global default="default" datasource="getAudioDevices" show-refresh>
 			<option value="default">System Default</option>
 		</sdpi-select>
+	</sdpi-item>
+
+	<sdpi-item label="">
+		<small>Shared by all StreamBoard keys: changing it here changes it everywhere.</small>
 	</sdpi-item>
 
 	<script>
