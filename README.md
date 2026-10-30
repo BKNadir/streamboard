@@ -1,6 +1,14 @@
+<p align="center">
+  <img src="com.bknadir.streamboard.sdPlugin/imgs/plugin/marketplace@2x.png" alt="StreamBoard" width="128" height="128">
+</p>
+
 # StreamBoard – Stream Deck soundboard plugin
 
 Turn your Stream Deck into a soundboard: play local audio files or direct URLs, pick the output device, set the volume and choose how each key behaves.
+
+## 📖 Documentation
+
+[English](docs/en.md) · [Français](docs/fr.md) · [Español](docs/es.md) · [Italiano](docs/it.md) · [Deutsch](docs/de.md) · [Nederlands](docs/nl.md)
 
 ## Features
 
