@@ -6,6 +6,15 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>Play Sound</title>
 	<script src="sdpi-components.js"></script>
+	<style>
+		/* Short help text shown right under its control. */
+		.hint {
+			margin-top: 4px;
+			font-size: 11px;
+			line-height: 1.35;
+			color: #969696;
+		}
+	</style>
 </head>
 
 <body>
@@ -33,10 +42,7 @@
 			<option value="play_restart">Play / Restart</option>
 			<option value="loop_stop">Loop / Stop</option>
 		</sdpi-select>
-	</sdpi-item>
-
-	<sdpi-item label="">
-		<small id="modeHint"></small>
+		<div id="modeHint" class="hint"></div>
 	</sdpi-item>
 
 	<sdpi-item label="Volume">
@@ -50,10 +56,7 @@
 		<sdpi-select setting="outputTarget" global default="default" datasource="getAudioDevices" show-refresh>
 			<option value="default">System Default</option>
 		</sdpi-select>
-	</sdpi-item>
-
-	<sdpi-item label="">
-		<small>Shared by all StreamBoard keys: changing it here changes it everywhere.</small>
+		<div class="hint">Shared by all StreamBoard keys.</div>
 	</sdpi-item>
 
 	<script>
