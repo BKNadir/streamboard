@@ -37,6 +37,8 @@ Formati supportati: **MP3, WAV, FLAC, OGG e AIFF**.
 | **Play / Restart** | Ferma il suono se è in riproduzione e lo fa ripartire dall'inizio. |
 | **Loop / Stop** | Riproduce il suono in loop. Premendo di nuovo, lo ferma. |
 
+Finché il suono di un tasto è in riproduzione, attorno al tasto compare una **cornice verde**, così vedi cosa sta suonando. Scompare quando il suono finisce.
+
 ## Volume
 
 Ogni tasto ha il proprio volume, da 0 a 100 %. Si applica in aggiunta al volume di sistema.

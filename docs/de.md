@@ -37,6 +37,8 @@ Unterstützte Formate: **MP3, WAV, FLAC, OGG und AIFF**.
 | **Play / Restart** | Stoppt den Sound, falls er läuft, und startet ihn von vorne. |
 | **Loop / Stop** | Spielt den Sound in einer Schleife. Erneutes Drücken stoppt ihn. |
 
+Solange der Sound einer Taste läuft, erscheint ein **grüner Rahmen** um die Taste – so siehst du, was gerade abgespielt wird. Er verschwindet, wenn der Sound endet.
+
 ## Lautstärke
 
 Jede Taste hat ihre eigene Lautstärke von 0 bis 100 %. Sie wirkt zusätzlich zur Systemlautstärke.

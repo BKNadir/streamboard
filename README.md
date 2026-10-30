@@ -25,6 +25,7 @@ Turn your Stream Deck into a soundboard: play local audio files or direct URLs, 
   | Play / Restart | Every press restarts the sound from the beginning |
   | Loop / Stop | Press to loop, press again to stop |
 
+- A **green frame** shows which keys are currently playing
 - A **Stop** action that stops every sound played by the plugin
 
 ## Installation

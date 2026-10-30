@@ -37,6 +37,8 @@ Supported formats: **MP3, WAV, FLAC, OGG and AIFF**.
 | **Play / Restart** | Stops the sound if it is playing and starts it again from the beginning. |
 | **Loop / Stop** | Plays the sound in a loop. Pressing again stops it. |
 
+While a key's sound is playing, a **green frame** appears around the key, so you can see what is playing. It disappears when the sound ends.
+
 ## Volume
 
 Each key has its own volume, from 0 to 100 %. It is applied on top of your system volume.

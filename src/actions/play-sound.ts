@@ -23,6 +23,10 @@ type Settings = {
   mode?: PlayMode;
 };
 
+/** Key states declared in manifest.json: 1 shows a green frame while a sound plays. */
+const STATE_IDLE = 0;
+const STATE_PLAYING = 1;
+
 @action({ UUID: "com.bknadir.streamboard.play" })
 export class PlaySoundAction extends SingletonAction<Settings> {
   private readonly log = streamDeck.logger.createScope("PlaySoundAction");
@@ -33,9 +37,20 @@ export class PlaySoundAction extends SingletonAction<Settings> {
     private readonly engine: AudioEngine,
   ) {
     super();
+
+    // Show which keys are playing: state 1 (green frame) while a sound plays.
+    this.sounds.onChange((actionId, playing) => {
+      const key = streamDeck.actions.getActionById(actionId);
+      if (key?.isKey()) {
+        key.setState(playing ? STATE_PLAYING : STATE_IDLE).catch(() => undefined);
+      }
+    });
   }
 
-  override onWillAppear(ev: WillAppearEvent<Settings>): void {
+  override async onWillAppear(ev: WillAppearEvent<Settings>): Promise<void> {
+    if (ev.action.isKey()) {
+      await ev.action.setState(this.sounds.isPlaying(ev.action.id) ? STATE_PLAYING : STATE_IDLE);
+    }
     this.preload(ev.payload.settings);
   }
 

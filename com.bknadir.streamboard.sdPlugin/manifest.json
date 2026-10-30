@@ -17,8 +17,13 @@
                 {
                     "Image": "imgs/actions/play/key",
                     "TitleAlignment": "middle"
+                },
+                {
+                    "Image": "imgs/actions/play/playing",
+                    "TitleAlignment": "middle"
                 }
-            ]
+            ],
+            "DisableAutomaticStates": true
         },
         {
             "Name": "Stop",
