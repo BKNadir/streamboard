@@ -4,6 +4,7 @@ import { PlaySoundAction } from "./actions/play-sound";
 import { StopSoundAction } from "./actions/stop-sound";
 import { AudioEngine } from "./audio/engine";
 import { SoundRegistry } from "./sound-registry";
+import { initGlobalSettings } from "./global-settings";
 
 // "debug" or "trace" are useful while developing; "info" keeps the log readable.
 streamDeck.logger.setLevel(process.env.STREAMBOARD_LOG_LEVEL === "debug" ? "debug" : "info");
@@ -36,5 +37,10 @@ downloader
   .prune(30)
   .then((removed) => removed && streamDeck.logger.info(`Pruned ${removed} cached download(s)`))
   .catch(() => undefined);
+
+// Shared settings (output device) applied to every key.
+initGlobalSettings((settings) =>
+  streamDeck.logger.info(`Shared output device: ${settings.outputTarget || "default"}`),
+);
 
 streamDeck.connect();

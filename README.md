@@ -7,7 +7,7 @@ Turn your Stream Deck into a soundboard: play local audio files or direct URLs, 
 - Play **local audio files** (MP3, WAV, FLAC, OGG, AIFF) or **direct URLs**
 - URL sounds are downloaded once, cached, and **pre-loaded** as soon as the key appears, so the first press plays instantly
 - **Volume** per key (0–100 %)
-- **Output device** per key, on Windows and macOS (e.g. send a sound to your headset or to a virtual cable for your stream)
+- **Output device** shared by all keys, on Windows and macOS: change it on any key and every key (including new ones) follows (e.g. send your sounds to your headset or to a virtual cable for your stream)
 - Four **key modes**:
 
   | Mode | Behaviour |
