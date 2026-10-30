@@ -1,0 +1,8 @@
+macos-15-intel x86_64 node v24.19.0
+1-npm-ci exit=0
+2-typecheck exit=0
+3-build exit=0
+4-bundle exit=0
+5-bin-resolve exit=0
+6-plugin-import exit=0
+7-engine-test exit=0

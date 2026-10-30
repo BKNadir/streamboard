@@ -1,0 +1,5 @@
+platform darwin x64 node v24.19.0
+outputs: [{"deviceId":"14057626332165357205","label":"Null Audio Device","groupId":"","kind":"audiooutput"}]
+offline context sampleRate 44100
+BIN RESOLVE OK
+exit=0

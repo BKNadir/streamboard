@@ -1,0 +1,8 @@
+
+> build
+> rollup -c
+
+[36m
+[1msrc/plugin.ts[22m → [1mcom.bknadir.streamboard.sdPlugin/bin/plugin.js[22m...[39m
+[32mcreated [1mcom.bknadir.streamboard.sdPlugin/bin/plugin.js[22m in [1m8.1s[22m[39m
+exit=0
