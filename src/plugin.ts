@@ -1,14 +1,46 @@
 import streamDeck from "@elgato/streamdeck";
+import { Downloader } from "./actions/downloader";
 import { PlaySoundAction } from "./actions/play-sound";
 import { StopSoundAction } from "./actions/stop-sound";
-import { Player } from "./actions/player";
+import { AudioEngine } from "./audio/engine";
+import { SoundRegistry } from "./sound-registry";
+import { initGlobalSettings } from "./global-settings";
 
+// "debug" or "trace" are useful while developing; "info" keeps the log readable.
+streamDeck.logger.setLevel(process.env.STREAMBOARD_LOG_LEVEL === "debug" ? "debug" : "info");
 
-streamDeck.logger.setLevel("trace");
+const sounds = new SoundRegistry();
+const downloader = new Downloader();
+const engine = new AudioEngine(streamDeck.logger.createScope("AudioEngine"));
 
-const playingSounds: Record<string, Player> = {};
+streamDeck.actions.registerAction(new PlaySoundAction(sounds, downloader, engine));
+streamDeck.actions.registerAction(new StopSoundAction(sounds));
 
-streamDeck.actions.registerAction(new PlaySoundAction(playingSounds));
-streamDeck.actions.registerAction(new StopSoundAction(playingSounds));
+// Release the audio devices cleanly when the plugin is stopped or reloaded.
+let shuttingDown = false;
+const shutdown = async () => {
+  if (shuttingDown) {
+    return;
+  }
+  shuttingDown = true;
+  sounds.stopAll();
+  await engine.closeAll();
+};
+for (const signal of ["SIGINT", "SIGTERM"] as const) {
+  process.once(signal, () => {
+    shutdown().finally(() => process.exit(0));
+  });
+}
+
+// Drop downloads that have not been used for a month.
+downloader
+  .prune(30)
+  .then((removed) => removed && streamDeck.logger.info(`Pruned ${removed} cached download(s)`))
+  .catch(() => undefined);
+
+// Shared settings (output device) applied to every key.
+initGlobalSettings((settings) =>
+  streamDeck.logger.info(`Shared output device: ${settings.outputTarget || "default"}`),
+);
 
 streamDeck.connect();

@@ -1,154 +1,99 @@
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import { spawn, type ChildProcess } from "node:child_process";
-import { existsSync } from "node:fs";
-
-export type MediaPlayer = {
-  play: () => void;
-  stop: () => void;
-  on: (event: string, callback: (id: string, error?: any) => void) => void;
-};
+import { EventEmitter } from "node:events";
+import { DEFAULT_SINK, type AudioEngine, type PlaybackHandle } from "../audio/engine";
 
 export type PlayerOptions = {
   volume?: number;
   loop?: boolean;
+  /** Output device id; undefined or "default" plays on the system default output. */
   audioDevice?: string;
 };
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const defaultPlayerPath = path.join(__dirname, "tools/player", "mpv.exe");
+type PlayerEvents = {
+  /** Playback finished, either naturally or because stop() was called. */
+  end: [id: string];
+  /** The file could not be decoded or the output could not be opened. */
+  playerror: [id: string, error: Error];
+};
 
-export class Player implements MediaPlayer {
-  private child: ChildProcess | null = null;
-  private handlers = new Map<string, Array<(id: string, error?: any) => void>>();
+/** Clamps a 0–100 volume, defaulting to 100 when unset or invalid. */
+export function normalizeVolume(volume?: number): number {
+  const value = Number(volume);
+  if (volume == null || !Number.isFinite(value)) {
+    return 100;
+  }
+  return Math.max(0, Math.min(100, Math.round(value)));
+}
+
+/** One sound being played by one key. */
+export class Player extends EventEmitter<PlayerEvents> {
+  private handle: PlaybackHandle | null = null;
+  private started = false;
+  private running = false;
+  private stopRequested = false;
 
   constructor(
     public readonly id: string,
     private readonly source: string,
-    private readonly options: PlayerOptions = {},
-    private readonly playPath = process.env.PLAY_WINDOWS_PATH ?? defaultPlayerPath,
+    private readonly options: PlayerOptions,
+    private readonly engine: AudioEngine,
   ) {
-    if (process.platform !== "win32") {
-      throw new Error("Player is currently only supported on Windows.");
-    }
+    super();
+  }
+
+  get isRunning(): boolean {
+    return this.running;
   }
 
   play(): void {
-    if (this.child) {
+    if (this.started) {
       return;
     }
+    this.started = true;
+    this.running = true;
 
-    if (!existsSync(this.playPath)) {
-      this.emit("playerror", new Error(`Player not found at ${this.playPath}`));
-      return;
-    }
-
-    const volume = this.normalizeVolume(this.options.volume);
-
-    const args = [
-      "--no-video",
-      "--really-quiet",
-      "--no-terminal",
-      `--volume=${volume}`,
-      "--keep-open=no",
-      "--idle=no",
-    ];
-
-    if (this.options.loop) {
-      args.push("--loop-file=inf");
-    }
-
-    if (this.options.audioDevice) {
-      args.push(`--audio-device=${this.options.audioDevice}`);
-    }
-
-    this.addNetworkHeaders(args);
-    args.push(this.source);
-
-    const child = spawn(this.playPath, args, {
-      windowsHide: true,
-      stdio: "ignore",
-    });
-
-    this.child = child;
-
-    child.on("error", (error) => {
-      this.child = null;
-      this.emit("playerror", error);
-    });
-
-    child.on("exit", (code, signal) => {
-      this.child = null;
-
-      if (code === 0 || signal !== null) {
-        this.emit("end");
-        return;
-      }
-
-      this.emit("playerror", new Error(`Player exited with code ${code}`));
-    });
+    this.engine
+      .play(
+        this.source,
+        {
+          volume: normalizeVolume(this.options.volume),
+          loop: !!this.options.loop,
+          sinkId: this.options.audioDevice || DEFAULT_SINK,
+        },
+        () => this.finish(),
+      )
+      .then((handle) => {
+        this.handle = handle;
+        // stop() may have been called while the file was still decoding.
+        if (this.stopRequested) {
+          handle.stop();
+        }
+      })
+      .catch((error: unknown) => {
+        if (!this.running) {
+          return;
+        }
+        this.running = false;
+        if (this.stopRequested) {
+          this.emit("end", this.id);
+          return;
+        }
+        this.emit("playerror", this.id, error instanceof Error ? error : new Error(String(error)));
+      });
   }
 
   stop(): void {
-    if (!this.child) {
+    if (!this.running || this.stopRequested) {
       return;
     }
-
-    if (!this.child.killed) {
-      this.child.kill("SIGTERM");
-    }
-
-    this.child = null;
+    this.stopRequested = true;
+    this.handle?.stop();
   }
 
-  on(event: string, callback: (id: string, error?: any) => void): void {
-    const callbacks = this.handlers.get(event) ?? [];
-    callbacks.push(callback);
-    this.handlers.set(event, callbacks);
-  }
-
-  private emit(event: string, error?: any): void {
-    const callbacks = this.handlers.get(event);
-    if (!callbacks) {
+  private finish(): void {
+    if (!this.running) {
       return;
     }
-
-    callbacks.forEach((callback) => callback(this.id, error));
-  }
-
-  private normalizeVolume(volume?: number): number {
-    if (volume == null || Number.isNaN(volume)) {
-      return 100;
-    }
-
-    if (volume <= 1) {
-      return Math.max(0, Math.min(100, Math.round(volume * 100)));
-    }
-
-    return Math.max(0, Math.min(100, Math.round(volume)));
-  }
-
-  private addNetworkHeaders(args: string[]): void {
-    let sourceUrl: URL;
-
-    try {
-      sourceUrl = new URL(this.source);
-    } catch {
-      return;
-    }
-
-    if (sourceUrl.protocol !== "http:" && sourceUrl.protocol !== "https:") {
-      return;
-    }
-
-    const referer = `${sourceUrl.origin}/`;
-    args.push(
-      "--http-header-fields=" +
-        [
-          "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131 Safari/537.36",
-          `Referer: ${referer}`,
-        ].join(","),
-    );
+    this.running = false;
+    this.emit("end", this.id);
   }
 }

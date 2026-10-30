@@ -1,59 +1,82 @@
-# StreamBoard - Stream Deck Audio Plugin
-Stream Deck plugin for advanced soundbox features with support for local files and URLs, volume control, and multi-output management.
+<p align="center">
+  <img src="com.bknadir.streamboard.sdPlugin/imgs/plugin/marketplace@2x.png" alt="StreamBoard" width="128" height="128">
+</p>
+
+# StreamBoard – Stream Deck soundboard plugin
+
+Turn your Stream Deck into a soundboard: play local audio files or direct URLs, pick the output device, set the volume and choose how each key behaves.
+
+## 📖 Documentation
+
+[English](docs/en.md) · [Français](docs/fr.md) · [Español](docs/es.md) · [Italiano](docs/it.md) · [Deutsch](docs/de.md) · [Nederlands](docs/nl.md)
 
 ## Features
-Audio playback of local MP3 files and remote URLs
 
-Volume control (0-100%)
+- Play **local audio files** (MP3, WAV, FLAC, OGG, AIFF) or **direct URLs**
+- URL sounds are downloaded once, cached, and **pre-loaded** as soon as the key appears, so the first press plays instantly
+- **Volume** per key (0–100 %)
+- **Output device** shared by all keys, on Windows and macOS: change it on any key and every key (including new ones) follows (e.g. send your sounds to your headset or to a virtual cable for your stream)
+- Four **key modes**:
 
-Loop/repeat mode
+  | Mode | Behaviour |
+  |------|-----------|
+  | Play / Stop | Press to play, press again to stop |
+  | Play / Overlap | Every press starts a new copy on top of the others |
+  | Play / Restart | Every press restarts the sound from the beginning |
+  | Loop / Stop | Press to loop, press again to stop |
 
-Specific audio device support
-
-Play/Stop Sound actions
+- A **Stop** action that stops every sound played by the plugin
 
 ## Installation
 
-### From Stream Deck Store (Recommended) (Will soon be released)
-Open Stream Deck
-Go to Store → Search "StreamBoard"
-Click Install
+### From the Stream Deck Marketplace
 
-### Manual Installation
+Coming soon.
 
-#### Clone the repo
-git clone https://github.com/bknadir/streamboard-streamdeck.git
-cd streamboard-streamdeck
+### From a release
 
-#### Build
+Download the latest `.streamDeckPlugin` file from the [Releases](https://github.com/BKNadir/streamboard/releases) page and double-click it.
+
+### From source
+
+```bash
+git clone https://github.com/BKNadir/streamboard.git
+cd streamboard
 npm install
 npm run build
+npx streamdeck link com.bknadir.streamboard.sdPlugin
+```
 
-I'll add release when I'll be satisfied with the features implemented
+During development, `npm run watch` rebuilds and restarts the plugin on every change. `npm run typecheck` checks the TypeScript without building.
+
+## Requirements
+
+- Windows 10 or later, or macOS 12 or later
+- Stream Deck 7.1 or later (the plugin runs on Node.js 24)
+
+Nothing else to install: the audio engine is bundled with the plugin.
+
+### Advanced settings (environment variables)
+
+| Variable | Purpose |
+|----------|---------|
+| `STREAMBOARD_CACHE_DIR` | Where downloaded URL sounds are cached (default: system temp folder). Files unused for 30 days are removed automatically |
+| `STREAMBOARD_LOG_LEVEL` | Set to `debug` for verbose logs |
 
 ## Third-party dependencies
-This project includes or relies on mpv for audio playback.
 
-Project: https://github.com/mpv-player/mpv
-License: GPLv3
-
-mpv is used as a third-party component for media playback.  
-Please check the mpv repository for source code and license information.
+StreamBoard plays audio with [node-web-audio-api](https://github.com/ircam-ismm/node-web-audio-api) (BSD-3-Clause), a Rust implementation of the Web Audio API for Node.js by IRCAM.
 
 ## License
-MIT License - see LICENSE
 
-Plugin developed by bknadir - Developer in my free time.
+MIT – see [LICENSE](LICENSE).
+
+Plugin developed by bknadir in my free time.
 
 ## Support the project
-If you find this project useful and would like to support its development, you can do so here:
 
-<center>
-<form action="https://www.paypal.com/donate" method="post" target="_top">
-<input type="hidden" name="hosted_button_id" value="75FUAAH35LBV8" />
-<input type="image" src="https://www.paypalobjects.com/en_US/BE/i/btn/btn_donateCC_LG.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" />
-<img alt="" border="0" src="https://www.paypal.com/en_BE/i/scr/pixel.gif" width="1" height="1" />
-</form>
-</center>
+If you find this project useful and would like to support its development:
 
-Support are not required but help me keep the project active and up to date.
+[![Donate with PayPal](https://www.paypalobjects.com/en_US/BE/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/donate/?hosted_button_id=75FUAAH35LBV8)
+
+Support is never required, but it helps keep the project active and up to date.
