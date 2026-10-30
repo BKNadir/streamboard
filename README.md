@@ -4,10 +4,10 @@ Turn your Stream Deck into a soundboard: play local audio files or direct URLs, 
 
 ## Features
 
-- Play **local audio files** (MP3, WAV, OGG, FLAC… anything mpv reads) or **direct URLs**
+- Play **local audio files** (MP3, WAV, FLAC, OGG, AIFF) or **direct URLs**
 - URL sounds are downloaded once, cached, and **pre-loaded** as soon as the key appears, so the first press plays instantly
 - **Volume** per key (0–100 %)
-- **Output device** per key (e.g. send a sound to your headset or to a virtual cable for your stream)
+- **Output device** per key, on Windows and macOS (e.g. send a sound to your headset or to a virtual cable for your stream)
 - Four **key modes**:
 
   | Mode | Behaviour |
@@ -44,19 +44,21 @@ During development, `npm run watch` rebuilds and restarts the plugin on every ch
 
 ## Requirements
 
-Windows 10 or later. mpv is bundled with the plugin, nothing else to install.
+- Windows 10 or later, or macOS 12 or later
+- Stream Deck 7.1 or later (the plugin runs on Node.js 24)
+
+Nothing else to install: the audio engine is bundled with the plugin.
 
 ### Advanced settings (environment variables)
 
 | Variable | Purpose |
 |----------|---------|
-| `STREAMBOARD_MPV_PATH` | Use a specific mpv executable |
 | `STREAMBOARD_CACHE_DIR` | Where downloaded URL sounds are cached (default: system temp folder). Files unused for 30 days are removed automatically |
 | `STREAMBOARD_LOG_LEVEL` | Set to `debug` for verbose logs |
 
 ## Third-party dependencies
 
-StreamBoard uses [mpv](https://github.com/mpv-player/mpv) for audio playback. mpv is licensed under the GPLv3; see its repository for source code and license information.
+StreamBoard plays audio with [node-web-audio-api](https://github.com/ircam-ismm/node-web-audio-api) (BSD-3-Clause), a Rust implementation of the Web Audio API for Node.js by IRCAM.
 
 ## License
 
