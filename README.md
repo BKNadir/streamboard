@@ -78,6 +78,6 @@ Plugin developed by bknadir in my free time.
 
 If you find this project useful and would like to support its development:
 
-[![Donate with PayPal](https://www.paypalobjects.com/en_US/BE/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/donate/?hosted_button_id=75FUAAH35LBV8)
+[![Support me on Ko-fi](https://img.shields.io/badge/Ko--fi-Support%20me-FF5E5B?logo=ko-fi&logoColor=white&style=for-the-badge)](https://ko-fi.com/bknadir)
 
 Support is never required, but it helps keep the project active and up to date.
