@@ -100,3 +100,9 @@ npx streamdeck link com.bknadir.streamboard.sdPlugin
 - `npm run watch` baut das Plugin bei jeder Änderung neu und startet es neu.
 - `npm run typecheck` prüft den Code, ohne zu bauen.
 - Jeder Push auf GitHub baut das Plugin automatisch: Die installationsfertige `.streamDeckPlugin`-Datei findest du im Bereich **Artifacts** des jeweiligen Laufs im Tab **Actions**.
+
+## Über das Projekt
+
+StreamBoard wurde von BKNadir in seiner Freizeit entwickelt. Anschließend wurde KI (Claude von Anthropic) eingesetzt, um den Code zu prüfen und zu verbessern.
+
+Wenn dir das Plugin hilft, kannst du das Projekt auf [Ko-fi](https://ko-fi.com/bknadir) unterstützen.

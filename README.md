@@ -4,6 +4,8 @@
 
 # StreamBoard – Stream Deck soundboard plugin
 
+🌐 **English** · [Français](README.fr.md)
+
 Turn your Stream Deck into a soundboard: play local audio files or direct URLs, pick the output device, set the volume and choose how each key behaves.
 
 ## 📖 Documentation
@@ -68,11 +70,13 @@ Nothing else to install: the audio engine is bundled with the plugin.
 
 StreamBoard plays audio with [node-web-audio-api](https://github.com/ircam-ismm/node-web-audio-api) (BSD-3-Clause), a Rust implementation of the Web Audio API for Node.js by IRCAM.
 
+## About
+
+I created and developed StreamBoard (BKNadir) in my free time. I then used AI (Claude, by Anthropic) to review and improve the code.
+
 ## License
 
 MIT – see [LICENSE](LICENSE).
-
-Plugin developed by bknadir in my free time.
 
 ## Support the project
 
