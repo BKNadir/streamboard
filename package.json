@@ -1,4 +1,6 @@
 {
+    "name": "streamboard",
+    "license": "PolyForm-Shield-1.0.0",
     "scripts": {
         "build": "rollup -c",
         "typecheck": "tsc --noEmit",

@@ -76,7 +76,17 @@ J'ai créé et développé StreamBoard (BKNadir) sur mon temps libre. J'ai ensui
 
 ## Licence
 
-MIT – voir [LICENSE](LICENSE).
+StreamBoard est gratuit et son code est **consultable** (*source-available*), sous [licence PolyForm Shield 1.0.0](LICENSE) :
+
+- ✅ Utilisation gratuite pour tout usage, y compris sur des streams monétisés
+- ✅ Vous pouvez lire, modifier et partager le code (en gardant la licence et la mention de copyright)
+- ❌ Vous ne pouvez pas vous en servir pour proposer un produit concurrent, payant ou gratuit – par exemple le revendre ou le publier comme un autre plugin de soundboard
+
+Les contributions sont les bienvenues : voir [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## StreamBoard Pro
+
+Une version **StreamBoard Pro**, avec des fonctionnalités en plus, sera disponible sur le Marketplace Elgato. L'installer par-dessus StreamBoard conserve toutes vos touches et tous vos réglages.
 
 ## Soutenir le projet
 
